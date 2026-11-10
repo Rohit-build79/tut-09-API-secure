@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CampusEats Catalogue</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h1>CampusEats Catalogue</h1>
+    <p class="sub">The menu &mdash; served by a REST API (Node Express)</p>
+    <div id="list">Loading&hellip;</div>
+    <form id="addForm">
+        <h3>Add a dish</h3>
+        <input id="name" placeholder="Dish name" required>
+        <input id="price" type="number" placeholder="Price (rupees)">
+        <button type="submit">Add dish</button>
+    </form>
+ <script>
+    // 1. READ: GET /items call karke menu list draw karna
+    async function load() {
+        const res = await fetch('/items');
+        const items = await res.json();
+        // Yahan dish ke sath Delete button add kiya hai
+        document.getElementById('list').innerHTML = items.map(i =>
+            `<div class="dish">
+      <span><span class="name">${i.name}</span> <span class="price">&#8377;${i.price}</span></span>
+      <button onclick="deleteDish(${i.id})" style="background:#e8541e; padding:0.2rem 0.5rem;">Delete</button>
+    </div>`
+        ).join('');
+    }
+
+    // 2. WRITE: Form se POST req bhejna aur page refresh karna
+    document.getElementById('addForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('name').value;
+        const price = document.getElementById('price').value;
+
+        await fetch('/items', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, price })
+        });
+
+        e.target.reset(); // form khali karna
+        load(); // list wapas load karna
+    });
+
+    // 3. DELETE: Naya function jo click karne par Delete request bhejega
+    async function deleteDish(id) {
+        await fetch('/items/' + id, { method: 'DELETE' });
+        load(); // List refresh kardo taaki dish gayab ho jaye
+    }
+
+    load(); // Page khulte hi list load karna
+</script>
+</body>
+
+</html>
